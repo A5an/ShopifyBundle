@@ -129,8 +129,13 @@ class BundleApp {
   renderInput(input) {
     return `
       <div class="bundle-input" data-input-id="${input.id}">
-        <h4 class="bundle-input-title">${input.title}</h4>
-        ${input.description ? `<p class="bundle-input-description">${input.description}</p>` : ''}
+        <div class="bundle-input-title">
+          <h4>${input.title}</h4>
+          ${input.description ? `
+            <span class="bundle-input-description-trigger" title="Click for more info">?</span>
+            <div class="bundle-input-description">${input.description}</div>
+          ` : ''}
+        </div>
         ${this.renderInputByType(input)}
       </div>
     `;
@@ -161,11 +166,15 @@ class BundleApp {
                 <input type="checkbox" ${this.isOptionSelected(input.id, option.id) ? 'checked' : ''}>
                 ${option.label}
               </label>
-              <span class="bundle-option-price">${this.formatPrice(option.price)}</span>
+              ${option.price && option.price.value > 0 ? `
+                <span class="bundle-option-price">${this.formatPrice(option.price)}</span>
+              ` : ''}
             </div>
             ${option.maxQuantity ? `
               <div class="bundle-option-quantity">
+                <button type="button" class="quantity-decrease">-</button>
                 <input type="number" min="1" max="${option.maxQuantity}" value="${this.getOptionQuantity(input.id, option.id)}" ${this.isOptionSelected(input.id, option.id) ? '' : 'disabled'}>
+                <button type="button" class="quantity-increase">+</button>
               </div>
             ` : ''}
           </div>
@@ -184,11 +193,15 @@ class BundleApp {
                 <input type="radio" name="input_${input.id}" ${this.isOptionSelected(input.id, option.id) ? 'checked' : ''}>
                 ${option.label}
               </label>
-              <span class="bundle-option-price">${this.formatPrice(option.price)}</span>
+              ${option.price && option.price.value > 0 ? `
+                <span class="bundle-option-price">${this.formatPrice(option.price)}</span>
+              ` : ''}
             </div>
             ${option.maxQuantity ? `
               <div class="bundle-option-quantity">
+                <button type="button" class="quantity-decrease">-</button>
                 <input type="number" min="1" max="${option.maxQuantity}" value="${this.getOptionQuantity(input.id, option.id)}" ${this.isOptionSelected(input.id, option.id) ? '' : 'disabled'}>
+                <button type="button" class="quantity-increase">+</button>
               </div>
             ` : ''}
           </div>
@@ -201,18 +214,23 @@ class BundleApp {
     return `
       <div class="bundle-options" data-type="radio">
         ${input.options.map(option => `
-          <div class="bundle-option" data-option-id="${option.id}">
+          <div class="bundle-option" data-type="radio" data-option-id="${option.id}">
             <div class="bundle-option-label">
               <label>
                 <input type="radio" name="input_${input.id}" ${this.isOptionSelected(input.id, option.id) ? 'checked' : ''}>
                 ${option.label}
               </label>
-              <span class="bundle-option-price">${this.formatPrice(option.price)}</span>
+              ${option.price && option.price.value > 0 ? `
+                <span class="bundle-option-price">${this.formatPrice(option.price)}</span>
+              ` : ''}
             </div>
             ${option.showFileUpload ? `
-              <div class="bundle-file-upload">
+              <div class="bundle-file-upload" data-show-upload="true">
+                <div class="bundle-file-upload-description">
+                  Extensions de fichier pris en charge à l'envoi de fichier: pdf, jpg, jpeg, png
+                </div>
                 <label>
-                  <input type="file" data-file-input>
+                  <input type="file" data-file-input accept=".pdf,.jpg,.jpeg,.png">
                   Upload File
                 </label>
                 <div class="bundle-file-preview"></div>
@@ -237,6 +255,38 @@ class BundleApp {
   }
 
   attachEventListeners() {
+    this.container.addEventListener('click', (e) => {
+      // Handle radio option card clicks
+      if (e.target.closest('.bundle-option[data-type="radio"]')) {
+        const option = e.target.closest('.bundle-option');
+        const radio = option.querySelector('input[type="radio"]');
+        if (!radio.checked) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+
+      // Handle quantity buttons
+      if (e.target.classList.contains('quantity-decrease') || e.target.classList.contains('quantity-increase')) {
+        const input = e.target.closest('.bundle-option-quantity').querySelector('input');
+        const currentValue = parseInt(input.value);
+        const max = parseInt(input.max);
+        const min = parseInt(input.min);
+
+        if (e.target.classList.contains('quantity-decrease')) {
+          if (currentValue > min) {
+            input.value = currentValue - 1;
+          }
+        } else {
+          if (currentValue < max) {
+            input.value = currentValue + 1;
+          }
+        }
+
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
     this.container.addEventListener('change', (e) => {
       const option = e.target.closest('.bundle-option');
       if (!option) return;
@@ -247,6 +297,20 @@ class BundleApp {
       const inputType = input.querySelector('.bundle-options').dataset.type;
 
       if (e.target.type === 'checkbox' || e.target.type === 'radio') {
+        // Remove selected class from all options in the same input group
+        if (e.target.type === 'radio') {
+          input.querySelectorAll('.bundle-option').forEach(opt => {
+            opt.classList.remove('selected');
+          });
+        }
+        
+        // Add selected class to the current option if checked
+        if (e.target.checked) {
+          option.classList.add('selected');
+        } else {
+          option.classList.remove('selected');
+        }
+
         this.handleOptionSelection(inputId, optionId, e.target.checked, inputType);
       } else if (e.target.type === 'number') {
         this.handleQuantityChange(inputId, optionId, parseInt(e.target.value));
@@ -300,6 +364,15 @@ class BundleApp {
 
   handleFileUpload(inputId, optionId, file) {
     if (file) {
+      // Validate file type
+      const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+      const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+      
+      if (!allowedTypes.includes(fileExt)) {
+        alert('Type de fichier non pris en charge. Veuillez utiliser: pdf, jpg, jpeg, ou png');
+        return;
+      }
+
       this.files.set(`${inputId}_${optionId}`, file);
       const preview = this.container.querySelector(`[data-option-id="${optionId}"] .bundle-file-preview`);
       preview.textContent = file.name;
@@ -394,13 +467,14 @@ class BundleApp {
       console.error('Cart error:', error);
       alert('Failed to add bundle to cart. Please try again.');
     }
+
   }
 
   formatPrice(price) {
-    if (!price) return '';
+    if (!price || price.value <= 0) return '';
     const value = price.type === 'percentage' 
       ? `${price.value}%`
-      : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price.value);
+      : new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price.value);
     return price.type === 'percentage' ? `+${value}` : value;
   }
 
