@@ -1,0 +1,86 @@
+{%- comment -%} Variant Selector Table Block {%- endcomment -%}
+
+<div class="variant-selector-table" data-product-id="{{ product.id }}">
+  <div class="variant-table-wrapper">
+    <table class="variant-table">
+      <thead>
+        <tr>
+          {% for option in product.options %}
+            <th>{{ option }}</th>
+          {% endfor %}
+          <th>{{ 'products.variant_table.quantity' | t }}</th>
+          <th>{{ 'products.variant_table.price' | t }}</th>
+          <th>{{ 'products.variant_table.stock' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for variant in product.variants %}
+          <tr class="variant-row" data-variant-id="{{ variant.id }}">
+            {% for option in product.options %}
+              {% assign option_index = forloop.index %}
+              {% capture option_name %}option{{ option_index }}{% endcapture %}
+              {% assign option_value = variant[option_name] %}
+              {% if option contains "Color" or option contains "Couleur" %}
+                <td class="color-cell">
+                  <span class="color-swatch" 
+                        style="background-color: {{ option_value | handleize }}" 
+                        title="{{ option_value }}"
+                        data-color="{{ option_value }}">
+                    <span class="visually-hidden">{{ option_value }}</span>
+                  </span>
+                </td>
+              {% else %}
+                <td class="option-cell">{{ option_value }}</td>
+              {% endif %}
+            {% endfor %}
+            <td class="quantity-cell">
+              <div class="quantity-selector {% if variant.inventory_quantity <= 0 %}disabled{% endif %}">
+                <button class="quantity-button minus" 
+                        aria-label="{{ 'products.variant_table.decrease_quantity' | t }}"
+                        {% if variant.inventory_quantity <= 0 %}disabled{% endif %}>-</button>
+                <input type="number" 
+                       class="quantity-input" 
+                       value="0" 
+                       min="0" 
+                       max="{{ variant.inventory_quantity }}"
+                       aria-label="{{ 'products.variant_table.quantity' | t }}"
+                       {% if variant.inventory_quantity <= 0 %}disabled{% endif %}
+                       data-price="{{ variant.price }}">
+                <button class="quantity-button plus" 
+                        aria-label="{{ 'products.variant_table.increase_quantity' | t }}"
+                        {% if variant.inventory_quantity <= 0 %}disabled{% endif %}>+</button>
+              </div>
+            </td>
+            <td class="price-cell">
+              <span class="original-price">{{ variant.price | money_without_trailing_zeros }} HT</span>
+              {% if variant.compare_at_price > variant.price %}
+                <span class="discounted-price">{{ variant.compare_at_price | money_without_trailing_zeros }} HT</span>
+              {% endif %}
+            </td>
+            <td class="stock-cell">
+              {% if variant.inventory_quantity > 0 %}
+                <span class="stock-icon in-stock" title="{{ 'products.variant_table.in_stock' | t }}">
+                  {% render 'icon-check' %}
+                </span>
+              {% else %}
+                <span class="stock-icon restock" title="{{ 'products.variant_table.restock' | t }}">
+                  {% render 'icon-clock' %}
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Variant Selector Table",
+  "target": "section",
+  "stylesheet": "variant-table.css",
+  "javascript": "variant-table.js",
+  "settings": []
+}
+{% endschema %} 

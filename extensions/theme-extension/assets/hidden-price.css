@@ -1,0 +1,26 @@
+.hidden-price-container {
+  margin: 1rem 0;
+}
+
+.hidden-price-message {
+  background-color: #f4f6f8;
+  border: 1px solid #dfe3e8;
+  border-radius: 4px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.hidden-price-message p {
+  margin: 0;
+  color: #454f5b;
+}
+
+.hidden-price-message a {
+  color: #008060;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.hidden-price-message a:hover {
+  text-decoration: underline;
+} 

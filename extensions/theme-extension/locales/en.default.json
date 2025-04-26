@@ -1,0 +1,22 @@
+{
+  "ratings": {
+    "stars": {
+      "label": "Ratings"
+    },
+    "home": {
+      "recommendationText": "Recommended Product!"
+    }
+  },
+  "products": {
+    "variant_table": {
+      "quantity": "Quantity",
+      "price": "Price",
+      "stock": "Stock",
+      "decrease_quantity": "Decrease quantity",
+      "increase_quantity": "Increase quantity",
+      "in_stock": "In stock",
+      "restock": "Restocking",
+      "voir_tout": "See all"
+    }
+  }
+}

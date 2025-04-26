@@ -1,0 +1,14 @@
+{
+  "products": {
+    "variant_table": {
+      "quantity": "Quantité",
+      "price": "Prix",
+      "stock": "Stock",
+      "decrease_quantity": "Diminuer la quantité",
+      "increase_quantity": "Augmenter la quantité",
+      "in_stock": "En stock",
+      "restock": "En réapprovisionnement",
+      "voir_tout": "Voir tout"
+    }
+  }
+} 

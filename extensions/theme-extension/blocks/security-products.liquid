@@ -1,0 +1,137 @@
+{% schema %}
+{
+  "name": "Security Products Grid",
+  "target": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    }
+  ]
+}
+{% endschema %}
+
+{% assign collection = collections[block.settings.collection] %}
+
+<style>
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.security-card {
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.security-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.security-image {
+  aspect-ratio: 1;
+  width: 100%;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.security-brand {
+  width: 80px;
+  margin-bottom: 1rem;
+}
+
+.security-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.security-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.rating-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cc1417;
+}
+
+.rating-dot.empty {
+  background: #e5e5e5;
+}
+
+.security-price {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #cc1417;
+  margin-top: auto;
+}
+
+.login-prompt {
+  color: #666;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  text-align: center;
+  margin-top: auto;
+}
+
+.login-prompt:hover {
+  background: #ebebeb;
+}
+</style>
+
+<div class="security-grid">
+  {% for product in collection.products %}
+    <a href="{{ product.url }}" class="security-card">
+      <img src="{{ 'abus-logo.svg' | asset_url }}" alt="ABUS" class="security-brand">
+      <img 
+        src="{{ product.featured_image | image_url: width: 400, height: 400 }}"
+        alt="{{ product.title }}"
+        class="security-image"
+        width="400"
+        height="400"
+        loading="lazy"
+      >
+      <h3 class="security-title">{{ product.title }}</h3>
+      
+      <div class="security-rating">
+        {% assign security_level = product.metafields.custom.security_level | default: 3 %}
+        {% for i in (1..5) %}
+          <span class="rating-dot {% if i > security_level %}empty{% endif %}"></span>
+        {% endfor %}
+        <span style="margin-left: 0.5rem; color: #666; font-size: 0.9rem;">
+          Security Level {{ security_level }}/5
+        </span>
+      </div>
+
+      {% if customer %}
+        <div class="security-price">
+          {{ product.price | money }}
+        </div>
+      {% else %}
+        <a href="{{ routes.account_login_url }}" class="login-prompt">
+          Log in to see price
+        </a>
+      {% endif %}
+    </a>
+  {% endfor %}
+</div> 

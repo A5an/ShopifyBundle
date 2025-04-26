@@ -1,0 +1,10 @@
+name = "theme-extension"
+type = "theme"
+api_version = "2024-01"
+
+[capabilities]
+block_progress = true
+
+[settings]
+fields = []
+

@@ -1,0 +1,33 @@
+Prix cachés si pas connecté
+Si le client n’est pas connecté à son compte alors la visibilité des prix n’est pas possible.
+
+
+
+
+PAGE PRODUIT CYLINDRE => BUNDLE
+    1) Changement design + position de l’indice de sécurité
+    2) Réassurance en bleu + changement de wording (positionnement pas définis encore sur la
+       page => A voir ce qui est le mieux : sous les photos ou en dessous du bouton ajouter au
+       panier)
+    3) Changement design de la « configuration du produit »
+           ● 1 taille par ligne avec 4 colonnes (tailles quantité prix et stock)
+           ● Remise sur quantité avec prix affiché en rouge pour le nouveau
+           ● Possibilité de mettre de la couleur dans le détail des options personnalisables
+    4) Au niveau de la partie stock en haut => doit correspondre avec la sélection faite par le client
+           ● Si produit en réappro (picto bleu) => ce ne sera plus l’affichage en stock mais le picto
+               bleu + « En cours de réapprovisionnement »
+5) Possibilité d’afficher une fourchette de livraison différente en fonction du produit et des
+   options sélectionnés
+6) Affichage prix HT
+7) Ajout d’un bouton « ajouter au devis » => les clients doivent pouvoir dans leur compte client
+   retrouver le devis
+Dans les options personnalisables : afficher l’encart photo si cocher oui uniquement
+PAGE PRODUIT CONFIGURABLE – 1 config
+  ⇨ Affichage en ligne chaque conf avec prix en face pour commander plusieurs couleur/taille
+     par ligne
+  ⇨ Colonnes couleurs => personnalisable en fonction de la configuration
+PAGE PRODUIT CONFIGURABLE – 2CONFIG
+  -   5 colonnes car 2 configurations (tailles et couleurs)
+  -   Les produits en cours de réappro doivent être en transparence et non cliquable au niveau
+      des quantités
+

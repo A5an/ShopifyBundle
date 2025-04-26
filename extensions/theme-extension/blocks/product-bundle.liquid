@@ -1,0 +1,155 @@
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+
+<!-- Debug Info -->
+<script>
+  console.log('Product Bundle Debug Info:');
+  console.log('Product:', {{ product | json }});
+  console.log('Current Variant:', {{ current_variant | json }});
+</script>
+
+<div class="page-width">
+  <div class="product-bundle">
+    <!-- Debug Info Display -->
+    {% if product %}
+      <div style="display: none;" data-debug-info>
+        <p>Product ID: {{ product.id }}</p>
+        <p>Product Handle: {{ product.handle }}</p>
+        <p>Current Template: {{ template.name }}</p>
+      </div>
+    {% else %}
+      <div class="bundle-error" style="color: red; padding: 1em;">
+        No product data available. Make sure you've selected a product in the theme customizer.
+      </div>
+    {% endif %}
+
+    <div class="product-bundle__media">
+      {%- for media in product.media -%}
+        <div class="product-bundle__media-item" data-media-id="{{ media.id }}">
+          {{ media | image_url: width: 800 | image_tag:
+            loading: 'lazy',
+            width: media.width,
+            height: media.height,
+            alt: media.alt | escape
+          }}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    <div class="product-bundle__info">
+      <h1 class="product-bundle__title">{{ product.title }}</h1>
+      
+      <div class="product-bundle__price">
+        <span class="product-bundle__current-price">
+          {{ current_variant.price | money }}
+        </span>
+        
+        {%- if current_variant.compare_at_price > current_variant.price -%}
+          <span class="product-bundle__compare-price">
+            {{ current_variant.compare_at_price | money }}
+          </span>
+        {%- endif -%}
+      </div>
+
+      <div class="product-bundle__description">
+        {{ product.description }}
+      </div>
+
+      <div class="bundle-container" data-product-id="{{ product.id }}" data-bundle-app>
+        <div class="bundle-blocks" data-bundle-blocks>
+          <!-- Blocks will be dynamically loaded here -->
+          <div class="bundle-loading">
+            Loading bundle configuration...
+          </div>
+        </div>
+
+        <div class="bundle-summary">
+          <div class="bundle-price">
+            <span class="bundle-base-price">{{ current_variant.price | money }}</span>
+            <span class="bundle-final-price" data-bundle-final-price></span>
+          </div>
+          <button type="button" class="bundle-add-to-cart" data-bundle-add disabled>
+            Add Bundle to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .page-width {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .product-bundle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media screen and (max-width: 768px) {
+    .product-bundle {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .product-bundle__media {
+    position: sticky;
+    top: 2rem;
+  }
+
+  .product-bundle__media-item {
+    margin-bottom: 1rem;
+  }
+
+  .product-bundle__media-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .product-bundle__title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .product-bundle__price {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .product-bundle__compare-price {
+    text-decoration: line-through;
+    color: #666;
+    margin-left: 0.5rem;
+  }
+
+  .product-bundle__description {
+    margin-bottom: 2rem;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Product Bundle",
+  "target": "section",
+  "stylesheet": "bundle.css",
+  "javascript": "bundle.js",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "Select the product to display the bundle for"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quantity",
+      "label": "Show quantity selector",
+      "default": true
+    }
+  ]
+}
+{% endschema %} 
