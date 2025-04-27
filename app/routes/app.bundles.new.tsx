@@ -25,7 +25,7 @@ import { MenuVerticalIcon, DeleteIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { useState, useCallback } from "react";
 import { BundleService } from "../services/bundle.server";
-import type { InputType, OptionValue, PriceModifier } from "../types/bundle";
+import type { InputType, PriceModifier } from "../types/bundle";
 import { authenticate } from "../shopify.server";
 
 type ActionData = {
@@ -50,6 +50,21 @@ type ShopifyProduct = {
     title: string;
   }>;
 };
+
+interface OptionValue {
+  id: string;
+  label: string;
+  variant?: {
+    id: string;
+    title?: string;
+  };
+  price?: {
+    type: "fixed" | "percentage";
+    value: number;
+  };
+  maxQuantity?: number;
+  showFileUpload?: boolean;
+}
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -129,7 +144,6 @@ export default function NewBundle() {
   const inputTypes = [
     { label: "Table", value: "TABLE" },
     { label: "Multi Select", value: "MULTI_SELECT" },
-    { label: "Single Select", value: "ONE_SELECT" },
     { label: "Radio Buttons", value: "RADIO" },
     { label: "File Upload", value: "FILE" },
   ];
@@ -388,199 +402,247 @@ export default function NewBundle() {
     if (input.type === "TABLE") {
       return (
         <BlockStack gap="400">
-          {handleVariantSelection(blockIndex, inputIndex)}
+          <Select
+            label="Select variants (required)"
+            options={
+              selectedProduct?.variants.map((variant) => ({
+                label: variant.title,
+                value: variant.id,
+              })) || []
+            }
+            value={input.selectedVariants?.[0] || ""}
+            onChange={(selected: string) => {
+              const newBlocks = [...blocks];
+              const currentInput = newBlocks[blockIndex].inputs[inputIndex];
+
+              if (!currentInput.selectedVariants) {
+                currentInput.selectedVariants = [];
+              }
+
+              if (!currentInput.selectedVariants.includes(selected)) {
+                currentInput.selectedVariants.push(selected);
+
+                const variant = selectedProduct?.variants.find(
+                  (v) => v.id === selected,
+                );
+                if (variant) {
+                  currentInput.options.push({
+                    id: selected,
+                    label: variant.title,
+                    price: { value: 0, type: "fixed" },
+                  });
+                }
+              }
+
+              setBlocks(newBlocks);
+            }}
+          />
           {input.selectedVariants && input.selectedVariants.length > 0 && (
-            <div>
-              <Text as="h4" variant="headingMd">
-                Selected Variants
+            <BlockStack gap="200">
+              <Text as="h6" variant="headingSm">
+                Selected Variants:
               </Text>
-              <BlockStack gap="200">
-                {input.selectedVariants.map(
-                  (variantId: string, idx: number) => {
-                    const variant = selectedProduct?.variants.find(
-                      (v) => v.id === variantId,
-                    );
-                    return (
-                      <InlineStack key={idx} align="space-between">
-                        <Text as="span">{variant?.title}</Text>
-                        <Button
-                          icon={DeleteIcon}
-                          onClick={() => {
-                            const newBlocks = [...blocks];
-                            const input =
-                              newBlocks[blockIndex].inputs[inputIndex];
-                            if (input.selectedVariants) {
-                              input.selectedVariants =
-                                input.selectedVariants.filter(
-                                  (id: string) => id !== variantId,
-                                );
-                            }
-                            // Also remove from options
-                            input.options = input.options.filter(
-                              (option: OptionValue) => option.id !== variantId,
-                            );
-                            setBlocks(newBlocks);
-                          }}
-                          tone="critical"
-                          variant="plain"
-                        />
-                      </InlineStack>
-                    );
-                  },
-                )}
-              </BlockStack>
-            </div>
+              {input.selectedVariants.map((variantId: string, idx: number) => {
+                const variant = selectedProduct?.variants.find(
+                  (v) => v.id === variantId,
+                );
+                return variant ? (
+                  <InlineStack key={variantId} align="space-between">
+                    <Text as="span">{variant.title}</Text>
+                    <Button
+                      tone="critical"
+                      variant="plain"
+                      onClick={() => {
+                        const newBlocks = [...blocks];
+                        const currentInput =
+                          newBlocks[blockIndex].inputs[inputIndex];
+                        currentInput.selectedVariants =
+                          currentInput.selectedVariants?.filter(
+                            (id) => id !== variantId,
+                          );
+                        currentInput.options = currentInput.options.filter(
+                          (opt) => opt.id !== variantId,
+                        );
+                        setBlocks(newBlocks);
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </InlineStack>
+                ) : null;
+              })}
+            </BlockStack>
           )}
         </BlockStack>
       );
     }
 
-    if (input.type !== "FILE") {
+    if (["MULTI_SELECT", "RADIO"].includes(input.type)) {
       return (
         <BlockStack gap="400">
-          <InlineStack align="space-between">
-            <Text variant="headingMd" as="h6">
-              Options
-            </Text>
-            <Button onClick={() => addOption(blockIndex, inputIndex)}>
-              Add Option
-            </Button>
-          </InlineStack>
-
           {input.options.map((option: OptionValue, optionIndex: number) => (
-            <Card key={option.id}>
+            <Card key={option.id} padding="400">
               <BlockStack gap="400">
-                <InlineStack align="space-between">
-                  <Text variant="headingMd" as="h6">
-                    Option {optionIndex + 1}
-                  </Text>
+                <InlineStack gap="400" blockAlign="end">
+                  {!(input.type === "MULTI_SELECT" && option.variant?.id) && (
+                    <div style={{ flexGrow: 1 }}>
+                      <TextField
+                        label="Option Label"
+                        value={option.label}
+                        onChange={(value) =>
+                          updateOption(
+                            blockIndex,
+                            inputIndex,
+                            optionIndex,
+                            "label",
+                            value,
+                          )
+                        }
+                        autoComplete="off"
+                      />
+                    </div>
+                  )}
+                  {input.type === "MULTI_SELECT" && (
+                    <Select
+                      label="Variant (optional)"
+                      options={[
+                        { label: "No variant", value: "" },
+                        ...(selectedProduct?.variants?.map((variant) => ({
+                          label: variant.title,
+                          value: variant.id,
+                        })) || []),
+                      ]}
+                      value={option.variant?.id || ""}
+                      onChange={(value) =>
+                        updateOption(
+                          blockIndex,
+                          inputIndex,
+                          optionIndex,
+                          "variant",
+                          value ? { id: value } : undefined,
+                        )
+                      }
+                    />
+                  )}
+                </InlineStack>
+
+                {!(input.type === "MULTI_SELECT" && option.variant?.id) && (
+                  <>
+                    <InlineStack gap="200" blockAlign="end">
+                      <Select
+                        label="Price Type"
+                        options={[
+                          { label: "Fixed", value: "fixed" },
+                          { label: "Percentage", value: "percentage" },
+                        ]}
+                        value={option.price?.type || "fixed"}
+                        onChange={(value) =>
+                          updateOption(
+                            blockIndex,
+                            inputIndex,
+                            optionIndex,
+                            "price.type",
+                            value,
+                          )
+                        }
+                      />
+                      <TextField
+                        type="number"
+                        label="Price Value"
+                        value={(option.price?.value || 0).toString()}
+                        onChange={(value) =>
+                          updateOption(
+                            blockIndex,
+                            inputIndex,
+                            optionIndex,
+                            "price.value",
+                            parseFloat(value) || 0,
+                          )
+                        }
+                        autoComplete="off"
+                      />
+                    </InlineStack>
+
+                    <InlineStack gap="400" blockAlign="end">
+                      <TextField
+                        type="number"
+                        label="Max Quantity"
+                        value={option.maxQuantity?.toString() || ""}
+                        onChange={(value) =>
+                          updateOption(
+                            blockIndex,
+                            inputIndex,
+                            optionIndex,
+                            "maxQuantity",
+                            value ? parseInt(value) : undefined,
+                          )
+                        }
+                        autoComplete="off"
+                      />
+                      <Checkbox
+                        label="Show File Upload"
+                        checked={option.showFileUpload || false}
+                        onChange={(value) =>
+                          updateOption(
+                            blockIndex,
+                            inputIndex,
+                            optionIndex,
+                            "showFileUpload",
+                            value,
+                          )
+                        }
+                      />
+                    </InlineStack>
+                  </>
+                )}
+
+                <InlineStack align="space-between" blockAlign="center">
                   <InlineStack gap="200">
                     <Button
-                      icon={MenuVerticalIcon}
+                      disabled={optionIndex === 0}
                       onClick={() =>
                         moveOption(blockIndex, inputIndex, optionIndex, "up")
                       }
-                      disabled={optionIndex === 0}
-                      variant="plain"
                     >
                       Move Up
                     </Button>
                     <Button
-                      icon={MenuVerticalIcon}
+                      disabled={optionIndex === input.options.length - 1}
                       onClick={() =>
                         moveOption(blockIndex, inputIndex, optionIndex, "down")
                       }
-                      disabled={optionIndex === input.options.length - 1}
-                      variant="plain"
                     >
                       Move Down
                     </Button>
-                    <Button
-                      icon={DeleteIcon}
-                      onClick={() =>
-                        removeOption(blockIndex, inputIndex, optionIndex)
-                      }
-                      tone="critical"
-                      variant="plain"
-                    />
                   </InlineStack>
+                  <Button
+                    icon={<Icon source={DeleteIcon} tone="critical" />}
+                    onClick={() =>
+                      removeOption(blockIndex, inputIndex, optionIndex)
+                    }
+                    variant="plain"
+                    accessibilityLabel="Remove option"
+                  />
                 </InlineStack>
-
-                <TextField
-                  label="Label"
-                  value={option.label}
-                  onChange={(value) =>
-                    updateOption(
-                      blockIndex,
-                      inputIndex,
-                      optionIndex,
-                      "label",
-                      value,
-                    )
-                  }
-                  autoComplete="off"
-                />
-
-                <Select
-                  label="Price Type"
-                  options={[
-                    {
-                      label: "Fixed Amount",
-                      value: "fixed",
-                    },
-                    {
-                      label: "Percentage",
-                      value: "percentage",
-                    },
-                  ]}
-                  value={option.price?.type || "fixed"}
-                  onChange={(value) =>
-                    updateOption(
-                      blockIndex,
-                      inputIndex,
-                      optionIndex,
-                      "price.type",
-                      value,
-                    )
-                  }
-                />
-
-                <TextField
-                  label={`Price ${option.price?.type === "percentage" ? "%" : ""}`}
-                  type="number"
-                  value={option.price?.value.toString() || "0"}
-                  onChange={(value) =>
-                    updateOption(
-                      blockIndex,
-                      inputIndex,
-                      optionIndex,
-                      "price.value",
-                      parseFloat(value),
-                    )
-                  }
-                  autoComplete="off"
-                />
-
-                {(input.type === "MULTI_SELECT" ||
-                  input.type === "ONE_SELECT") && (
-                  <TextField
-                    label="Max Quantity"
-                    type="number"
-                    value={option.maxQuantity?.toString() || ""}
-                    onChange={(value) =>
-                      updateOption(
-                        blockIndex,
-                        inputIndex,
-                        optionIndex,
-                        "maxQuantity",
-                        value ? parseInt(value) : undefined,
-                      )
-                    }
-                    autoComplete="off"
-                  />
-                )}
-
-                {input.type === "RADIO" && (
-                  <Checkbox
-                    label="Show File Upload"
-                    checked={option.showFileUpload || false}
-                    onChange={(value) =>
-                      updateOption(
-                        blockIndex,
-                        inputIndex,
-                        optionIndex,
-                        "showFileUpload",
-                        value,
-                      )
-                    }
-                  />
-                )}
               </BlockStack>
             </Card>
           ))}
+          <Button onClick={() => addOption(blockIndex, inputIndex)} fullWidth>
+            Add Option
+          </Button>
         </BlockStack>
       );
     }
+
+    if (input.type === "FILE") {
+      return (
+        <Text as="p">
+          File upload options are configured per-option in other input types.
+        </Text>
+      );
+    }
+
+    return null;
   };
 
   if (!selectedProduct) {

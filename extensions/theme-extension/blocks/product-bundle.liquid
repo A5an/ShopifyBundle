@@ -64,12 +64,16 @@
 
         <div class="bundle-summary">
           <div class="bundle-price">
-            <span class="bundle-base-price">{{ current_variant.price | money }}</span>
             <span class="bundle-final-price" data-bundle-final-price></span>
           </div>
-          <button type="button" class="bundle-add-to-cart" data-bundle-add disabled>
-            Add Bundle to Cart
-          </button>
+          <div class="bundle-actions">
+             <button type="button" class="bundle-add-to-cart button button--primary" data-bundle-add disabled>
+                Add Bundle to Cart
+             </button>
+             <a href="https://test54329.myshopify.com/pages/contact" class="button button--secondary">
+                Demander un devis
+             </a>
+          </div>
         </div>
       </div>
     </div>
@@ -261,8 +265,14 @@
     border-radius: 4px;
   }
 
+  /* Show file upload inside a SELECTED option */
   .bundle-option.selected .bundle-file-upload[data-show-upload="true"] {
     display: block;
+  }
+  
+  /* Show standalone file upload input (not inside a bundle-option) */
+  .bundle-input > .bundle-file-upload {
+      display: block;
   }
 
   .bundle-file-upload-description {
@@ -291,6 +301,146 @@
 
   .bundle-option-price:empty {
     display: none;
+  }
+
+  /* Variant table styles */
+  .variant-selector-table {
+    margin: 2rem 0;
+  }
+
+  .variant-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .variant-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+
+  .variant-table th,
+  .variant-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+    height: 60px;
+  }
+
+  .variant-table th {
+    font-weight: 600;
+    background: #f9f9f9;
+  }
+
+  .variant-row:hover {
+    background: #f5f5f5;
+  }
+
+  .color-cell {
+    vertical-align: middle;
+  }
+
+  .color-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+  }
+
+  .color-name {
+    font-size: 0.9rem;
+  }
+
+  .quantity-selector {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    width: 120px;
+  }
+
+  .quantity-selector.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .quantity-button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .quantity-button:hover {
+    background: #e0e0e0;
+  }
+
+  .quantity-input {
+    width: 56px;
+    height: 32px;
+    border: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+
+  .quantity-input::-webkit-outer-spin-button,
+  .quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .price-cell {
+    white-space: nowrap;
+  }
+
+  .original-price {
+    font-weight: 600;
+  }
+
+  .discounted-price {
+    text-decoration: line-through;
+    color: #666;
+    margin-left: 0.5rem;
+  }
+
+  .stock-cell {
+    text-align: center;
+  }
+
+  .stock-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: help;
+  }
+
+  .stock-icon.in-stock {
+    color: #008060;
+    background: rgba(0, 128, 96, 0.1);
+  }
+
+  .stock-icon.restock {
+    color: #ff9800;
+    background: rgba(255, 152, 0, 0.1);
   }
 </style>
 

@@ -1,0 +1,28 @@
+{% comment %}
+  Bundle Data Loader
+  Loads bundle data for the current product and makes it available to the client-side JavaScript
+{% endcomment %}
+
+<script>
+  // Debug info
+  console.group('Bundle Data Debug Info');
+  console.log('Product:', {{ product | json }});
+  console.log('Bundle URL:', {{ bundle_url | json }});
+  console.log('Current product ID:', {{ product.id | json }});
+  console.log('Current variant ID:', {{ product.selected_or_first_available_variant.id | json }});
+  console.log('All variant IDs:', {{ product.variants | map: 'id' | json }});
+  console.groupEnd();
+
+  // Make product data available globally
+  window.product = {{ product | json }};
+  window.productGid = {{ product.id | prepend: 'gid://shopify/Product/' | json }};
+  window.variantGids = {{ product.variants | map: 'id' | map: 'prepend', 'gid://shopify/ProductVariant/' | json }};
+
+  // Initialize bundle data loading
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('Fetching bundle data...');
+    fetchBundleData().catch(error => {
+      console.error('Failed to fetch bundle data:', error);
+    });
+  });
+</script> 

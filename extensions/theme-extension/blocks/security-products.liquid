@@ -58,6 +58,15 @@
   color: #333;
 }
 
+.security-title a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.security-title a:hover {
+  text-decoration: underline;
+}
+
 .security-rating {
   display: flex;
   align-items: center;
@@ -101,7 +110,7 @@
 
 <div class="security-grid">
   {% for product in collection.products %}
-    <a href="{{ product.url }}" class="security-card">
+    <div class="security-card">
       <img src="{{ 'abus-logo.svg' | asset_url }}" alt="ABUS" class="security-brand">
       <img 
         src="{{ product.featured_image | image_url: width: 400, height: 400 }}"
@@ -111,7 +120,9 @@
         height="400"
         loading="lazy"
       >
-      <h3 class="security-title">{{ product.title }}</h3>
+      <h3 class="security-title">
+        <a href="{{ product.url }}">{{ product.title }}</a>
+      </h3>
       
       <div class="security-rating">
         {% assign security_level = product.metafields.custom.security_level | default: 3 %}
@@ -132,6 +143,6 @@
           Log in to see price
         </a>
       {% endif %}
-    </a>
+    </div>
   {% endfor %}
 </div> 
