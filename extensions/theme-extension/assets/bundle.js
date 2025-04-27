@@ -467,7 +467,6 @@ class BundleApp {
       console.error('Cart error:', error);
       alert('Failed to add bundle to cart. Please try again.');
     }
-
   }
 
   formatPrice(price) {

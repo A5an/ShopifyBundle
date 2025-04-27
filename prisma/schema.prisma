@@ -24,7 +24,7 @@ enum InputType {
 model Block {
   id          String        @id @default(uuid())
   bundleId    String
-  bundle      Bundle        @relation(fields: [bundleId], references: [id])
+  bundle      Bundle        @relation(fields: [bundleId], references: [id], onDelete: Cascade)
   title       String
   description String?
   position    Int
@@ -36,7 +36,7 @@ model Block {
 model BundleInput {
   id          String    @id @default(uuid())
   blockId     String
-  block       Block     @relation(fields: [blockId], references: [id])
+  block       Block     @relation(fields: [blockId], references: [id], onDelete: Cascade)
   title       String
   description String?
   type        InputType

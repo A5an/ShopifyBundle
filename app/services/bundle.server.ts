@@ -31,7 +31,16 @@ export class BundleService {
         options: any;
       }>;
     }>;
-  }) {
+  }): Promise<Bundle> {
+    // Check if bundle already exists for this product
+    const existingBundle = await prisma.bundle.findUnique({
+      where: { productId: data.productId },
+    });
+
+    if (existingBundle) {
+      throw new Error("A bundle already exists for this product. Please edit the existing bundle or choose a different product.");
+    }
+
     return prisma.bundle.create({
       data: {
         title: data.title,
@@ -122,7 +131,7 @@ export class BundleService {
           // Check file upload requirement for radio options
           if (input.type === 'RADIO' && value.showFileUpload && !selectedValue.fileUrl) {
             return false;
-          }
+  }
         }
 
         // For single select inputs, ensure only one value is selected
@@ -131,7 +140,7 @@ export class BundleService {
         }
       }
     }
-
+    
     return true;
   }
 

@@ -3,7 +3,7 @@
 client_id = "addbe2d55db106bd399d5ed3905fc275"
 name = "growing-projection-app"
 handle = "growing-projection-app-6"
-application_url = "https://rooms-contracting-rom-beans.trycloudflare.com"
+application_url = "https://webmasters-adolescent-indonesian-voip.trycloudflare.com"
 embedded = true
 
 [build]
@@ -27,15 +27,15 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://rooms-contracting-rom-beans.trycloudflare.com/auth/callback",
-  "https://rooms-contracting-rom-beans.trycloudflare.com/auth/shopify/callback",
-  "https://rooms-contracting-rom-beans.trycloudflare.com/api/auth/callback"
+  "https://webmasters-adolescent-indonesian-voip.trycloudflare.com/auth/callback",
+  "https://webmasters-adolescent-indonesian-voip.trycloudflare.com/auth/shopify/callback",
+  "https://webmasters-adolescent-indonesian-voip.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
 embedded = false
 
 [app_proxy]
-url = "https://rooms-contracting-rom-beans.trycloudflare.com"
+url = "https://webmasters-adolescent-indonesian-voip.trycloudflare.com"
 prefix = "apps"
 subpath = "bundle"
