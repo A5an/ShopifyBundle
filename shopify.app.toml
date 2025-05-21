@@ -3,7 +3,7 @@
 client_id = "addbe2d55db106bd399d5ed3905fc275"
 name = "growing-projection-app"
 handle = "growing-projection-app-6"
-application_url = "https://independence-accomplished-sofa-objectives.trycloudflare.com"
+application_url = "https://shopify-bundle-builder.fly.dev"
 embedded = true
 
 [build]
@@ -27,15 +27,15 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://independence-accomplished-sofa-objectives.trycloudflare.com/auth/callback",
-  "https://independence-accomplished-sofa-objectives.trycloudflare.com/auth/shopify/callback",
-  "https://independence-accomplished-sofa-objectives.trycloudflare.com/api/auth/callback"
+  "https://shopify-bundle-builder.fly.dev/auth/callback",
+  "https://shopify-bundle-builder.fly.dev/auth/shopify/callback",
+  "https://shopify-bundle-builder.fly.dev/api/auth/callback"
 ]
 
 [pos]
 embedded = false
 
 [app_proxy]
-url = "https://independence-accomplished-sofa-objectives.trycloudflare.com"
+url = "https://shopify-bundle-builder.fly.dev"
 prefix = "apps"
 subpath = "bundle"

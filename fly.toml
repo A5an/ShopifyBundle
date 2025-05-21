@@ -1,0 +1,31 @@
+# fly.toml app configuration file generated for shopify-bundle-builder on 2025-05-21T22:24:45+05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'shopify-bundle-builder'
+primary_region = 'cdg'
+
+[build]
+
+[deploy]
+  release_command = 'npx prisma migrate deploy'
+
+[env]
+  PORT = '3000'
+  SCOPES = 'write_products'
+  SHOPIFY_API_KEY = 'addbe2d55db106bd399d5ed3905fc275'
+  SHOPIFY_APP_URL = 'https://shopify-bundle-builder.fly.dev'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
