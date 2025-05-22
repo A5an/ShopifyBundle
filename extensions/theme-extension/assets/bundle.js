@@ -1,5 +1,5 @@
-// const STOREFRONT_API_TOKEN = 'c4ef00cae3aa859ebdd6a1d805151699'
-const STOREFRONT_API_TOKEN = '05eb84641778e6e55aa9b288d8e958ce';
+// const STOREFRONT_API_TOKEN = 'c4ef00cae3aa859ebdd6a1d805151699' // for test test54329.myshopify.com
+const STOREFRONT_API_TOKEN = '05eb84641778e6e55aa9b288d8e958ce'; // for protect-home-fr.myshopify.com
 
 async function fetchVariantQuantities(productGid) {
   const query = `
