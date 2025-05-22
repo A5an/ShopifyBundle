@@ -4,7 +4,12 @@ import {
   type LoaderFunctionArgs,
   redirect,
 } from "@remix-run/node";
-import { Form, useActionData, useNavigate } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useNavigate,
+  useNavigation,
+} from "@remix-run/react";
 import {
   Page,
   Layout,
@@ -20,6 +25,7 @@ import {
   EmptyState,
   Select,
   Checkbox,
+  Spinner,
 } from "@shopify/polaris";
 import { MenuVerticalIcon, DeleteIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -115,6 +121,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function NewBundle() {
   const navigate = useNavigate();
   const actionData = useActionData<ActionData>();
+  const transition = useNavigation();
+  const isSubmitting = transition.state === "submitting";
 
   const app = useAppBridge();
   const [selectedProduct, setSelectedProduct] = useState<ShopifyProduct | null>(
@@ -689,240 +697,284 @@ export default function NewBundle() {
             <Banner tone="critical">{actionData.message}</Banner>
           </Layout.Section>
         )}
-
         <Layout.Section>
-          <Form method="post">
-            <BlockStack gap="500">
-              <Card>
-                <BlockStack gap="400">
-                  <Banner tone="info">
-                    Selected product: {selectedProduct.title}
-                    <Button variant="plain" onClick={handleProductSelect}>
-                      Change
-                    </Button>
-                  </Banner>
-                  <input
-                    type="hidden"
-                    name="productId"
-                    value={selectedProduct.id}
-                  />
-
-                  <TextField
-                    label="Title"
-                    name="title"
-                    value={formData.title}
-                    onChange={(value) =>
-                      setFormData({ ...formData, title: value })
-                    }
-                    autoComplete="off"
-                  />
-                  <TextField
-                    label="Description"
-                    name="description"
-                    value={formData.description}
-                    onChange={(value) =>
-                      setFormData({ ...formData, description: value })
-                    }
-                    multiline={3}
-                    autoComplete="off"
-                  />
-                </BlockStack>
-              </Card>
-
-              <Card>
-                <BlockStack gap="400">
-                  <InlineStack align="space-between">
-                    <Text variant="headingMd" as="h2">
-                      Bundle Blocks
-                    </Text>
-                    <Button onClick={addBlock}>Add Block</Button>
-                  </InlineStack>
-
-                  {blocks.map((block, blockIndex) => (
-                    <Card key={blockIndex}>
-                      <BlockStack gap="400">
-                        <InlineStack align="space-between">
-                          <Text variant="headingMd" as="h3">
-                            Block {blockIndex + 1}
-                          </Text>
-                          <InlineStack gap="200">
-                            <Button
-                              icon={MenuVerticalIcon}
-                              onClick={() => moveBlock(blockIndex, "up")}
-                              disabled={blockIndex === 0}
-                              variant="plain"
-                            >
-                              Move Up
-                            </Button>
-                            <Button
-                              icon={MenuVerticalIcon}
-                              onClick={() => moveBlock(blockIndex, "down")}
-                              disabled={blockIndex === blocks.length - 1}
-                              variant="plain"
-                            >
-                              Move Down
-                            </Button>
-                            <Button
-                              icon={DeleteIcon}
-                              onClick={() => removeBlock(blockIndex)}
-                              tone="critical"
-                              variant="plain"
-                            />
-                          </InlineStack>
-                        </InlineStack>
-
-                        <TextField
-                          label="Title"
-                          value={block.title}
-                          onChange={(value) =>
-                            updateBlock(blockIndex, "title", value)
-                          }
-                          autoComplete="off"
-                        />
-                        <TextField
-                          label="Description"
-                          value={block.description}
-                          onChange={(value) =>
-                            updateBlock(blockIndex, "description", value)
-                          }
-                          multiline={2}
-                          autoComplete="off"
-                        />
-
+          <div style={{ position: "relative" }}>
+            {isSubmitting && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  background: "rgba(255,255,255,0.7)",
+                  zIndex: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Spinner accessibilityLabel="Loading" size="large" />
+              </div>
+            )}
+            <Form method="post">
+              <BlockStack gap="500">
+                <Card>
+                  <BlockStack gap="400">
+                    <Banner tone="info">
+                      Selected product: {selectedProduct.title}
+                      <Button
+                        variant="plain"
+                        onClick={handleProductSelect}
+                        disabled={isSubmitting}
+                      >
+                        Change
+                      </Button>
+                    </Banner>
+                    <input
+                      type="hidden"
+                      name="productId"
+                      value={selectedProduct.id}
+                    />
+                    <TextField
+                      label="Title"
+                      name="title"
+                      value={formData.title}
+                      onChange={(value) =>
+                        setFormData({ ...formData, title: value })
+                      }
+                      autoComplete="off"
+                      disabled={isSubmitting}
+                    />
+                    <TextField
+                      label="Description"
+                      name="description"
+                      value={formData.description}
+                      onChange={(value) =>
+                        setFormData({ ...formData, description: value })
+                      }
+                      multiline={3}
+                      autoComplete="off"
+                      disabled={isSubmitting}
+                    />
+                  </BlockStack>
+                </Card>
+                <Card>
+                  <BlockStack gap="400">
+                    <InlineStack align="space-between">
+                      <Text variant="headingMd" as="h2">
+                        Bundle Blocks
+                      </Text>
+                      <Button onClick={addBlock} disabled={isSubmitting}>
+                        Add Block
+                      </Button>
+                    </InlineStack>
+                    {blocks.map((block, blockIndex) => (
+                      <Card key={blockIndex}>
                         <BlockStack gap="400">
                           <InlineStack align="space-between">
-                            <Text variant="headingMd" as="h4">
-                              Inputs
+                            <Text variant="headingMd" as="h3">
+                              Block {blockIndex + 1}
                             </Text>
-                            <Button onClick={() => addInput(blockIndex)}>
-                              Add Input
-                            </Button>
+                            <InlineStack gap="200">
+                              <Button
+                                icon={MenuVerticalIcon}
+                                onClick={() => moveBlock(blockIndex, "up")}
+                                disabled={blockIndex === 0 || isSubmitting}
+                                variant="plain"
+                              >
+                                Move Up
+                              </Button>
+                              <Button
+                                icon={MenuVerticalIcon}
+                                onClick={() => moveBlock(blockIndex, "down")}
+                                disabled={
+                                  blockIndex === blocks.length - 1 ||
+                                  isSubmitting
+                                }
+                                variant="plain"
+                              >
+                                Move Down
+                              </Button>
+                              <Button
+                                icon={DeleteIcon}
+                                onClick={() => removeBlock(blockIndex)}
+                                tone="critical"
+                                variant="plain"
+                                disabled={isSubmitting}
+                              />
+                            </InlineStack>
                           </InlineStack>
-
-                          {block.inputs.map((input, inputIndex) => (
-                            <Card key={inputIndex}>
-                              <BlockStack gap="400">
-                                <InlineStack align="space-between">
-                                  <Text variant="headingMd" as="h5">
-                                    Input {inputIndex + 1}
-                                  </Text>
-                                  <InlineStack gap="200">
-                                    <Button
-                                      icon={MenuVerticalIcon}
-                                      onClick={() =>
-                                        moveInput(blockIndex, inputIndex, "up")
-                                      }
-                                      disabled={inputIndex === 0}
-                                      variant="plain"
-                                    >
-                                      Move Up
-                                    </Button>
-                                    <Button
-                                      icon={MenuVerticalIcon}
-                                      onClick={() =>
-                                        moveInput(
-                                          blockIndex,
-                                          inputIndex,
-                                          "down",
-                                        )
-                                      }
-                                      disabled={
-                                        inputIndex === block.inputs.length - 1
-                                      }
-                                      variant="plain"
-                                    >
-                                      Move Down
-                                    </Button>
-                                    <Button
-                                      icon={DeleteIcon}
-                                      onClick={() =>
-                                        removeInput(blockIndex, inputIndex)
-                                      }
-                                      tone="critical"
-                                      variant="plain"
-                                    />
+                          <TextField
+                            label="Title"
+                            value={block.title}
+                            onChange={(value) =>
+                              updateBlock(blockIndex, "title", value)
+                            }
+                            autoComplete="off"
+                            disabled={isSubmitting}
+                          />
+                          <TextField
+                            label="Description"
+                            value={block.description}
+                            onChange={(value) =>
+                              updateBlock(blockIndex, "description", value)
+                            }
+                            multiline={2}
+                            autoComplete="off"
+                            disabled={isSubmitting}
+                          />
+                          <BlockStack gap="400">
+                            <InlineStack align="space-between">
+                              <Text variant="headingMd" as="h4">
+                                Inputs
+                              </Text>
+                              <Button
+                                onClick={() => addInput(blockIndex)}
+                                disabled={isSubmitting}
+                              >
+                                Add Input
+                              </Button>
+                            </InlineStack>
+                            {block.inputs.map((input, inputIndex) => (
+                              <Card key={inputIndex}>
+                                <BlockStack gap="400">
+                                  <InlineStack align="space-between">
+                                    <Text variant="headingMd" as="h5">
+                                      Input {inputIndex + 1}
+                                    </Text>
+                                    <InlineStack gap="200">
+                                      <Button
+                                        icon={MenuVerticalIcon}
+                                        onClick={() =>
+                                          moveInput(
+                                            blockIndex,
+                                            inputIndex,
+                                            "up",
+                                          )
+                                        }
+                                        disabled={
+                                          inputIndex === 0 || isSubmitting
+                                        }
+                                        variant="plain"
+                                      >
+                                        Move Up
+                                      </Button>
+                                      <Button
+                                        icon={MenuVerticalIcon}
+                                        onClick={() =>
+                                          moveInput(
+                                            blockIndex,
+                                            inputIndex,
+                                            "down",
+                                          )
+                                        }
+                                        disabled={
+                                          inputIndex ===
+                                            block.inputs.length - 1 ||
+                                          isSubmitting
+                                        }
+                                        variant="plain"
+                                      >
+                                        Move Down
+                                      </Button>
+                                      <Button
+                                        icon={DeleteIcon}
+                                        onClick={() =>
+                                          removeInput(blockIndex, inputIndex)
+                                        }
+                                        tone="critical"
+                                        variant="plain"
+                                        disabled={isSubmitting}
+                                      />
+                                    </InlineStack>
                                   </InlineStack>
-                                </InlineStack>
-
-                                <Select
-                                  label="Input Type"
-                                  options={inputTypes}
-                                  value={input.type}
-                                  onChange={(value) =>
-                                    updateInput(
-                                      blockIndex,
-                                      inputIndex,
-                                      "type",
-                                      value,
-                                    )
-                                  }
-                                />
-                                <TextField
-                                  label="Title"
-                                  value={input.title}
-                                  onChange={(value) =>
-                                    updateInput(
-                                      blockIndex,
-                                      inputIndex,
-                                      "title",
-                                      value,
-                                    )
-                                  }
-                                  autoComplete="off"
-                                />
-                                <TextField
-                                  label="Description"
-                                  value={input.description}
-                                  onChange={(value) =>
-                                    updateInput(
-                                      blockIndex,
-                                      inputIndex,
-                                      "description",
-                                      value,
-                                    )
-                                  }
-                                  multiline={2}
-                                  autoComplete="off"
-                                />
-                                <Checkbox
-                                  label="Required"
-                                  checked={input.required}
-                                  onChange={(value) =>
-                                    updateInput(
-                                      blockIndex,
-                                      inputIndex,
-                                      "required",
-                                      value,
-                                    )
-                                  }
-                                />
-
-                                {renderInputOptions(
-                                  blockIndex,
-                                  inputIndex,
-                                  input,
-                                )}
-                              </BlockStack>
-                            </Card>
-                          ))}
+                                  <Select
+                                    label="Input Type"
+                                    options={inputTypes}
+                                    value={input.type}
+                                    onChange={(value) =>
+                                      updateInput(
+                                        blockIndex,
+                                        inputIndex,
+                                        "type",
+                                        value,
+                                      )
+                                    }
+                                    disabled={isSubmitting}
+                                  />
+                                  <TextField
+                                    label="Title"
+                                    value={input.title}
+                                    onChange={(value) =>
+                                      updateInput(
+                                        blockIndex,
+                                        inputIndex,
+                                        "title",
+                                        value,
+                                      )
+                                    }
+                                    autoComplete="off"
+                                    disabled={isSubmitting}
+                                  />
+                                  <TextField
+                                    label="Description"
+                                    value={input.description}
+                                    onChange={(value) =>
+                                      updateInput(
+                                        blockIndex,
+                                        inputIndex,
+                                        "description",
+                                        value,
+                                      )
+                                    }
+                                    multiline={2}
+                                    autoComplete="off"
+                                    disabled={isSubmitting}
+                                  />
+                                  <Checkbox
+                                    label="Required"
+                                    checked={input.required}
+                                    onChange={(value) =>
+                                      updateInput(
+                                        blockIndex,
+                                        inputIndex,
+                                        "required",
+                                        value,
+                                      )
+                                    }
+                                    disabled={isSubmitting}
+                                  />
+                                  {renderInputOptions(
+                                    blockIndex,
+                                    inputIndex,
+                                    input,
+                                  )}
+                                </BlockStack>
+                              </Card>
+                            ))}
+                          </BlockStack>
                         </BlockStack>
-                      </BlockStack>
-                    </Card>
-                  ))}
-                </BlockStack>
-              </Card>
-
-              <input
-                type="hidden"
-                name="blocks"
-                value={JSON.stringify(blocks)}
-              />
-
-              <Button variant="primary" submit>
-                Create Bundle
-              </Button>
-            </BlockStack>
-          </Form>
+                      </Card>
+                    ))}
+                  </BlockStack>
+                </Card>
+                <input
+                  type="hidden"
+                  name="blocks"
+                  value={JSON.stringify(blocks)}
+                />
+                <Button
+                  variant="primary"
+                  submit
+                  disabled={isSubmitting}
+                  loading={isSubmitting}
+                >
+                  Create Bundle
+                </Button>
+              </BlockStack>
+            </Form>
+          </div>
         </Layout.Section>
       </Layout>
     </Page>

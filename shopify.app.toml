@@ -27,15 +27,15 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://shopify-bundle-builder.fly.dev/auth/callback",
   "https://shopify-bundle-builder.fly.dev/auth/shopify/callback",
   "https://shopify-bundle-builder.fly.dev/api/auth/callback"
+  "https://shopify-bundle-builder.fly.dev/auth/callback",
 ]
 
 [pos]
 embedded = false
 
 [app_proxy]
-url = "https://shopify-bundle-builder.fly.dev"
+url = "https://discounts-potentially-butts-souls.trycloudflare.com"
 prefix = "apps"
 subpath = "bundle"
